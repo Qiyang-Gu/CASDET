@@ -1,0 +1,11 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+models/
+dataset/*
+!dataset/readme.md
+log/run.log
+log/results/**/*.npz
+!log/results/intervention/*.npz
+figs_generated/

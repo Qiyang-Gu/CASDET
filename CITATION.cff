@@ -1,0 +1,29 @@
+cff-version: 1.2.0
+message: "If you use this code, please cite the paper below."
+title: "CASDET: Detecting RAG Hallucinations Considering Attention--FFN Cascade Influence"
+authors:
+  - family-names: Gu
+    given-names: Qiyang
+    email: guqyams@163.com
+  - family-names: Guo
+    given-names: Pengyu
+  - family-names: Zhang
+    given-names: Fei
+year: 2026
+type: software
+license: MIT
+doi: 10.5281/zenodo.23468986
+url: https://github.com/Qiyang-Gu/CASDET
+version: 1.0.1
+preferred-citation:
+  type: article
+  title: "CASDET: Detecting RAG Hallucinations Considering Attention--FFN Cascade Influence"
+  authors:
+    - family-names: Gu
+      given-names: Qiyang
+    - family-names: Guo
+      given-names: Pengyu
+    - family-names: Zhang
+      given-names: Fei
+  journal: "Discover Computing"
+  year: 2026
