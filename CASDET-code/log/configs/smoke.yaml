@@ -1,0 +1,23 @@
+# Smoke test for a fresh server deployment: one model, RAGTruth, 100 samples.
+# Use main.yaml for the reported experiments.
+
+seed: 42
+max_len: 4096
+max_samples: 100        # With split: test below; stratified by task and label.
+val_ratio: 0.2
+
+output_dir: log/results/smoke_main
+
+models:
+  llama2_7b:
+    name: models/Llama-2-7b-chat-hf
+    dtype: float16
+
+datasets:
+  - name: ragtruth
+    quality: good
+    # The file is grouped by task; taking the first N records from the test
+    # split keeps all three task types represented.
+    split: test
+    files:
+      llama2_7b: dataset/ragtruth/llama2_7b/response.jsonl

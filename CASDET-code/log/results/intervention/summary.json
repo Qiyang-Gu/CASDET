@@ -1,0 +1,102 @@
+{
+  "gamma_grid": [
+    0.0,
+    0.25,
+    0.5,
+    0.75,
+    1.0
+  ],
+  "models": {
+    "mistral_7b": {
+      "page_l_test": {
+        "page_l": 23980.0,
+        "expected_l": 19620.0,
+        "variance_l": 10900.0,
+        "z": 41.756436904216095,
+        "p_value": 0.0,
+        "log_p_value": -876.4513763238714,
+        "p_display": "< 1e-300",
+        "significant": true,
+        "n_responses": 436,
+        "n_conditions": 5
+      },
+      "mean_effect_by_gamma": [
+        0.0,
+        0.008962591646651046,
+        0.01838223015746389,
+        0.028437211950555978,
+        0.03918254193204633
+      ],
+      "n_responses": 436
+    },
+    "llama2_7b": {
+      "page_l_test": {
+        "page_l": 24695.0,
+        "expected_l": 20205.0,
+        "variance_l": 11225.0,
+        "z": 42.37452090905235,
+        "p_value": 0.0,
+        "log_p_value": -902.4660530723497,
+        "p_display": "< 1e-300",
+        "significant": true,
+        "n_responses": 449,
+        "n_conditions": 5
+      },
+      "mean_effect_by_gamma": [
+        0.0,
+        0.011966979531604542,
+        0.023863304489173627,
+        0.035731242701454426,
+        0.04751467746405748
+      ],
+      "n_responses": 449
+    },
+    "llama3_8b": {
+      "page_l_test": {
+        "page_l": 19800.0,
+        "expected_l": 16200.0,
+        "variance_l": 9000.0,
+        "z": 37.94206145925361,
+        "p_value": 2.608037803e-315,
+        "log_p_value": -724.3557061550406,
+        "p_display": "< 1e-300",
+        "significant": true,
+        "n_responses": 360,
+        "n_conditions": 5
+      },
+      "mean_effect_by_gamma": [
+        0.0,
+        0.018378311005591504,
+        0.036152472336969166,
+        0.05328708573523354,
+        0.06967132774248365
+      ],
+      "n_responses": 360
+    },
+    "llama2_13b": {
+      "page_l_test": {
+        "page_l": 24750.0,
+        "expected_l": 20250.0,
+        "variance_l": 11250.0,
+        "z": 42.42169282598494,
+        "p_value": 0.0,
+        "log_p_value": -904.4671644081665,
+        "p_display": "< 1e-300",
+        "significant": true,
+        "n_responses": 450,
+        "n_conditions": 5
+      },
+      "mean_effect_by_gamma": [
+        0.0,
+        0.016938750100756718,
+        0.03178213784467015,
+        0.04610107567009499,
+        0.059393569121030464
+      ],
+      "n_responses": 450
+    }
+  },
+  "n_failed": 0,
+  "n_missing": 0,
+  "n_missing_own": 0
+}

@@ -1,0 +1,22 @@
+{
+  "page_l_test": {
+    "page_l": 24695.0,
+    "expected_l": 20205.0,
+    "variance_l": 11225.0,
+    "z": 42.37452090905235,
+    "p_value": 0.0,
+    "log_p_value": -902.4660530723497,
+    "p_display": "< 1e-300",
+    "significant": true,
+    "n_responses": 449,
+    "n_conditions": 5
+  },
+  "mean_effect_by_gamma": [
+    0.0,
+    0.011966979531604542,
+    0.023863304489173627,
+    0.035731242701454426,
+    0.04751467746405748
+  ],
+  "n_responses": 449
+}

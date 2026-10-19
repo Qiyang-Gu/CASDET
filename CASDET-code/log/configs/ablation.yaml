@@ -1,0 +1,46 @@
+# =====================================================================
+# Ablation studies (paper Section 4.4; Figure 3)
+#
+# 1) cascade: quantify only the direct effect of the attention output and
+#    ignore the influence on the subsequent FFN (Figure 3a).
+# 2) control: remove the local control state and quantify the normal FFN
+#    output directly (Figure 3b).
+#
+# The third ablation (single/leave-one-out statistics, Figure 4) does not
+# need a separate run: the main experiment emits all seven combinations
+# from the same statistics.
+#
+# All ablations use RAGTruth and report AUPRC.
+# =====================================================================
+
+seed: 42
+max_len: 4096
+max_samples: null
+
+val_ratio: 0.2
+
+output_dir: log/results/ablation
+
+models:
+  llama2_7b:
+    name: models/Llama-2-7b-chat-hf
+    dtype: float16
+  llama2_13b:
+    name: models/Llama-2-13b-chat-hf
+    dtype: float16
+    device: auto_multi
+  llama3_8b:
+    name: models/Llama-3-8B-Instruct
+    dtype: float16
+  mistral_7b:
+    name: models/Mistral-7B-Instruct-v0.1
+    dtype: float16
+
+datasets:
+  - name: ragtruth
+    quality: good
+    files:
+      llama2_7b:  dataset/ragtruth/llama2_7b/response.jsonl
+      llama2_13b: dataset/ragtruth/llama2_13b/response.jsonl
+      llama3_8b:  dataset/ragtruth/llama3_8b/response.jsonl
+      mistral_7b: dataset/ragtruth/mistral_7b/response.jsonl

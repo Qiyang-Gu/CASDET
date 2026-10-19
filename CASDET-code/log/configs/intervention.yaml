@@ -1,0 +1,48 @@
+# =====================================================================
+# Graded local intervention (paper Section 3.3 / 4.2; Table 2, Figure 2)
+#
+# For each response, the external-context contribution entering the FFN of
+# layer l is scaled by gamma:
+#     x_t^{mid,l}(gamma) = x_t^{mid,l} - (1 - gamma) * e_t^l
+# gamma=1 is the normal state; gamma=0 uses the local control state.
+# A Page's L test checks H1: the effect strengthens monotonically as gamma
+# increases.
+#
+# This experiment uses RAGTruth only, with gamma in {0, 0.25, 0.5, 0.75, 1}.
+# =====================================================================
+
+seed: 42
+max_len: 4096
+val_ratio: 0.2       # Must match main.yaml so that N is identical across tables.
+max_samples: null    # Must stay null: the evaluation split is already formed.
+
+gamma_grid: [0.0, 0.25, 0.5, 0.75, 1.0]
+
+output_dir: log/results/intervention
+
+models:
+  llama2_7b:
+    name: models/Llama-2-7b-chat-hf
+    dtype: float16
+  llama2_13b:
+    name: models/Llama-2-13b-chat-hf
+    dtype: float16
+    device: auto_multi
+  llama3_8b:
+    name: models/Llama-3-8B-Instruct
+    dtype: float16
+  mistral_7b:
+    name: models/Mistral-7B-Instruct-v0.1
+    dtype: float16
+
+datasets:
+  - name: ragtruth
+    quality: good
+    # Keep null so that selection_eval_splits sees the official train/val/test
+    # fields and forms exactly the same evaluation split as Table 1.
+    split: null
+    files:
+      llama2_7b:  dataset/ragtruth/llama2_7b/response.jsonl
+      llama2_13b: dataset/ragtruth/llama2_13b/response.jsonl
+      llama3_8b:  dataset/ragtruth/llama3_8b/response.jsonl
+      mistral_7b: dataset/ragtruth/mistral_7b/response.jsonl
