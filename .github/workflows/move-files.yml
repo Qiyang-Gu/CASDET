@@ -1,0 +1,108 @@
+name: Move files to root
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  move:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Move files and add metadata
+        run: |
+          set -e
+          shopt -s dotglob
+          mv CASDET-code/* .
+          rm -rf CASDET-code
+
+          cat > .zenodo.json <<'EOF'
+          {
+            "title": "CASDET: Detecting RAG Hallucinations Considering Attention--FFN Cascade Influence",
+            "description": "Official implementation and experiment code for CASDET, a training-free method for detecting hallucinations in retrieval-augmented generation. The method constructs a local control state at the FFN input, quantifies the Attention--FFN cascade influence signal with the Logit Lens, and combines influence breadth, depth, and intensity into a response-level hallucination risk score.",
+            "creators": [
+              {
+                "name": "Gu, Qiyang",
+                "affiliation": "National Innovation Institute of Defense Technology, Academy of Military Sciences, Beijing, China"
+              },
+              {
+                "name": "Guo, Pengyu",
+                "affiliation": "National Innovation Institute of Defense Technology, Academy of Military Sciences, Beijing, China"
+              },
+              {
+                "name": "Zhang, Fei",
+                "affiliation": "National Innovation Institute of Defense Technology, Academy of Military Sciences, Beijing, China"
+              }
+            ],
+            "license": "mit",
+            "upload_type": "software",
+            "access_right": "open",
+            "version": "1.0.1",
+            "language": "eng",
+            "keywords": [
+              "retrieval-augmented generation",
+              "hallucination detection",
+              "mechanistic interpretability",
+              "Attention-FFN cascade",
+              "Logit Lens",
+              "CASDET"
+            ]
+          }
+          EOF
+
+          cat > .gitignore <<'EOF'
+          __pycache__/
+          *.py[cod]
+          .pytest_cache/
+          .venv/
+          models/
+          dataset/*
+          !dataset/readme.md
+          log/run.log
+          log/results/**/*.npz
+          !log/results/intervention/*.npz
+          figs_generated/
+          EOF
+
+          python3 - <<'PY'
+          import re
+          from pathlib import Path
+
+          badge = ('[![DOI](https://zenodo.org/badge/DOI/'
+                   '10.5281/zenodo.23468986.svg)]'
+                   '(https://doi.org/10.5281/zenodo.23468986)')
+
+          p = Path('readme.md')
+          s = p.read_text(encoding='utf-8')
+          if 'zenodo.23468986' not in s:
+              m = re.match(r'^(# CASDET[^\r\n]*)', s)
+              if m:
+                  rest = s[m.end():].lstrip('\r\n')
+                  s = m.group(1) + '\n\n' + badge + '\n\n' + rest
+              else:
+                  s = badge + '\n\n' + s
+              p.write_text(s, encoding='utf-8')
+
+          p = Path('CITATION.cff')
+          s = p.read_text(encoding='utf-8')
+          if 'zenodo.23468986' not in s:
+              extra = ('doi: 10.5281/zenodo.23468986\n'
+                       'url: https://github.com/Qiyang-Gu/CASDET\n'
+                       'version: 1.0.1')
+              s, n = re.subn(r'(license:\s*MIT[^\r\n]*)', r'\1\n' + extra,
+                             s, count=1)
+              if n == 0:
+                  s = s.rstrip() + '\n' + extra + '\n'
+              p.write_text(s, encoding='utf-8')
+          PY
+
+          rm -f .github/workflows/move-files.yml
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Move release files to repository root and add metadata"
+          git push
