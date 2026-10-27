@@ -1,29 +1,54 @@
 cff-version: 1.2.0
 message: "If you use this code, please cite the paper below."
 title: "CASDET: Detecting RAG Hallucinations Considering Attention--FFN Cascade Influence"
+version: "1.1.0"
+date-released: "2026-10-27"
+doi: 10.5281/zenodo.23468986
+url: https://github.com/Qiyang-Gu/CASDET
+repository-code: https://github.com/Qiyang-Gu/CASDET
 authors:
   - family-names: Gu
     given-names: Qiyang
-    email: guqyams@163.com
-  - family-names: Guo
-    given-names: Pengyu
+    email: guqyams@outlook.com
+    affiliation: "National Innovation Institute of Defense Technology, Academy of Military Sciences, Beijing 100071, China"
+  - family-names: Tang
+    given-names: Min
+    email: mtangcn@163.com
+    affiliation: "National Innovation Institute of Defense Technology, Academy of Military Sciences, Beijing 100071, China"
+  - family-names: Wang
+    given-names: Fei
+    email: feiwang@bupt.cn
+    affiliation: "National Innovation Institute of Defense Technology, Academy of Military Sciences, Beijing 100071, China"
+  - family-names: Chen
+    given-names: Hui
+    email: chenhui@bupt.cn
+    affiliation: "National Innovation Institute of Defense Technology, Academy of Military Sciences, Beijing 100071, China"
   - family-names: Zhang
     given-names: Fei
+    email: feizhang100@sina.com
+    affiliation: "National Innovation Institute of Defense Technology, Academy of Military Sciences, Beijing 100071, China"
+  - family-names: Guo
+    given-names: Pengyu
+    email: pengyu.guo@alumni.nudt.edu.cn
+    affiliation: "National Innovation Institute of Defense Technology, Academy of Military Sciences, Beijing 100071, China"
 year: 2026
 type: software
 license: MIT
-doi: 10.5281/zenodo.23468986
-url: https://github.com/Qiyang-Gu/CASDET
-version: 1.0.1
 preferred-citation:
   type: article
   title: "CASDET: Detecting RAG Hallucinations Considering Attention--FFN Cascade Influence"
   authors:
     - family-names: Gu
       given-names: Qiyang
-    - family-names: Guo
-      given-names: Pengyu
+    - family-names: Tang
+      given-names: Min
+    - family-names: Wang
+      given-names: Fei
+    - family-names: Chen
+      given-names: Hui
     - family-names: Zhang
       given-names: Fei
+    - family-names: Guo
+      given-names: Pengyu
   journal: "Discover Computing"
   year: 2026

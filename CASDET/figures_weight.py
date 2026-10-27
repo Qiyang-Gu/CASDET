@@ -16,6 +16,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.legend_handler import HandlerTuple
 from matplotlib.lines import Line2D
+from matplotlib.transforms import Bbox
 from matplotlib.patches import FancyBboxPatch
 from matplotlib.textpath import TextPath
 from matplotlib.font_manager import FontProperties
@@ -28,16 +29,13 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from CASDET.experiments import merge_weight_sweep, _sweep_table  # noqa: E402
-from CASDET.utils import _DATASET_DISPLAY  # noqa: E402
+from CASDET.utils import MODEL_COLORS, _DATASET_DISPLAY  # noqa: E402
 
 DATASETS = ("ragtruth", "hallurag")
 
 METRICS = ("auroc", "auprc", "pcc")
 
 HGT = np.sqrt(3) / 2
-
-MODEL_COLORS = {"llama2_7b": "#0956AF", "llama2_13b": "#2995A3",
-                "llama3_8b": "#6E6E6E", "mistral_7b": "#111111"}
 
 MODEL_NAMES = {"llama2_7b": "Llama2-7B", "llama2_13b": "Llama2-13B",
                "llama3_8b": "Llama3-8B", "mistral_7b": "Mistral-7B"}
@@ -48,7 +46,6 @@ RC = {
     "mathtext.fontset": "dejavusans",
     "font.size": 8.5,
     "pdf.fonttype": 42,
-    "svg.fonttype": "path",
 }
 
 _K = 1.15
@@ -460,31 +457,67 @@ def make_figure(out_path: Path | None = None) -> Path:
         Line2D([], [], marker="D", linestyle="None", markersize=6,
                mfc="#222", mec="white", label="peak")],
         loc="upper center", ncol=2, frameon=False, fontsize=_LEG_FS,
-        bbox_to_anchor=_top_anchor(-8.5))
-    fig.legend(
+        bbox_to_anchor=_top_anchor(12.5))
+    leg_models = fig.legend(
         handles=[Line2D([], [], marker="o", ls="None",
                         mfc=MODEL_COLORS[m], mec="none", ms=5)
                  for m in mkeys],
         labels=[MODEL_NAMES[m] for m in mkeys],
-        loc="upper center", ncol=4, frameon=False, fontsize=_LEG_FS,
+        loc="upper left", ncol=4, frameon=False, fontsize=_LEG_FS,
         columnspacing=1.8, handletextpad=0.6, handlelength=1.6,
-        bbox_to_anchor=_top_anchor(12.5))
-    fig.legend(
+        borderaxespad=0,
+        bbox_to_anchor=(0.0, _top_anchor(39.75)[1]))
+    leg_equal = fig.legend(
         handles=[tuple(Line2D([], [], marker="o", ls="None",
                               mfc=MODEL_COLORS[m], mec="white", mew=0.8,
                               ms=8) for m in mkeys)],
-        labels=["equal weights (per model)"], loc="upper center", ncol=1,
-        frameon=False, fontsize=_LEG_FS, handlelength=3.8,
-        bbox_to_anchor=_top_anchor(33.5),
+        labels=["equal weights (per model)"], loc="upper left", ncol=1,
+        frameon=False, fontsize=_LEG_FS, handlelength=3.8, borderaxespad=0,
+        bbox_to_anchor=(0.0, _top_anchor(39.75)[1]),
         handler_map={tuple: HandlerTuple(ndivide=None)})
+
+    # Center the merged second row as one block.
+    fig.canvas.draw()
+    renderer = fig.canvas.get_renderer()
+    w_models = leg_models.get_window_extent(renderer).width
+    w_equal = leg_equal.get_window_extent(renderer).width
+    fig_w = fig.get_window_extent(renderer).width
+    gap_px = 22.0 * fig.dpi / 72.0
+    left_px = (fig_w - (w_models + gap_px + w_equal)) / 2.0
+    y_anchor = _top_anchor(39.75)[1]
+    leg_models.set_bbox_to_anchor((left_px / fig_w, y_anchor), transform=fig.transFigure)
+    leg_equal.set_bbox_to_anchor(((left_px + w_models + gap_px) / fig_w, y_anchor), transform=fig.transFigure)
+    fig.canvas.draw()
 
     if out_path is None:
         out_path = ROOT / "figs_generated" / "fig5_weight_simplex.pdf"
     out_path = Path(out_path)
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(out_path)
+
+    measure_dpi = 1200
+    old_dpi = fig.dpi
+    fig.set_dpi(measure_dpi)
+    fig.canvas.draw()
+    rgba = np.asarray(fig.canvas.buffer_rgba())
+    if rgba.ndim == 3 and rgba.shape[2] >= 3:
+        ink = (rgba[..., :3] < 245).any(axis=2)
+    else:
+        ink = rgba < 245
+    rows = np.where(ink.any(axis=1))[0]
+    cols = np.where(ink.any(axis=0))[0]
+    if rows.size == 0 or cols.size == 0:
+        raise RuntimeError("no ink found while cropping Figure 5")
+    margin_in = 2.4 / 72.0
+    x0 = cols[0] / float(measure_dpi) - margin_in
+    x1 = cols[-1] / float(measure_dpi) + margin_in
+    y0 = (rgba.shape[0] - 1 - rows[-1]) / float(measure_dpi) - margin_in
+    y1 = fig.get_figheight() - rows[0] / float(measure_dpi) + margin_in
+    bbox = Bbox.from_extents(x0, y0, x1, y1)
+    fig.set_dpi(old_dpi)
+    fig.savefig(out_path, bbox_inches=bbox, pad_inches=0)
     if out_path.suffix.lower() == ".pdf":
-        fig.savefig(out_path.with_suffix(".png"), dpi=300)
+        fig.savefig(out_path.with_suffix(".png"), dpi=300,
+                    bbox_inches=bbox, pad_inches=0)
     plt.close(fig)
     print(f"wrote {out_path}")
     return out_path

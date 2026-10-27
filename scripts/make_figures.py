@@ -106,15 +106,7 @@ def _make_statistics(results: Path, out_path: Path) -> None:
     plot_statistic_combinations(
         per_model, out_path,
         combos_order=combos_order,
-        y_axes={
-            "auroc": ([0.5, 0.6, 0.7, 0.8], (0.47, 0.83)),
-            "auprc": ([0.4, 0.5, 0.6, 0.7, 0.8], (0.38, 0.84)),
-            "pcc": ([0.0, 0.1, 0.2, 0.3, 0.4, 0.5], (-0.045, 0.52)),
-        },
         fig_w=5.05, fig_h=5.47,
-        colors={"llama2_7b": "#0956AF", "llama2_13b": "#2995A3",
-                "llama3_8b": "#6E6E6E", "mistral_7b": "#111111"},
-        mean_color="#A63096",
         mean_models=models,
         label_suffix={"llama3_8b": " (RAGTruth only)"})
 

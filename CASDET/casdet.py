@@ -20,7 +20,7 @@ from .model_adapter import LayerStates, ModelAdapter
 
 @dataclass
 class ProfileStatistics:
-    """Response-level influence breadth, depth, and intensity (Eq. 15a-c)."""
+    """Response-level influence breadth, depth, and intensity (Eqs. 13-15)."""
     breadth: float
     depth: float
     intensity: float
@@ -45,14 +45,14 @@ def layer_relative_change(
     logits_hat: torch.Tensor,
     token_ids: torch.Tensor,
 ) -> torch.Tensor:
-    """Local change in the target token's log-probability at one layer (Eq. 10)."""
+    """Local change in the target token's log-probability at one layer (Eq. 9)."""
     z = logits.float()
     z_hat = logits_hat.float()
     tid = token_ids.to(z.device)
     return _log_prob(z, tid) - _log_prob(z_hat, tid)
 
 def token_relative_effect(layer_changes: torch.Tensor) -> torch.Tensor:
-    """Average layer-wise changes into the token-level effect (Eq. 12)."""
+    """Average layer-wise changes into the token-level effect (Eq. 10)."""
     return layer_changes.float().mean(dim=0)
 
 def _layer_scale(layer_effects: Sequence[np.ndarray]) -> np.ndarray:
@@ -77,14 +77,14 @@ def _layer_scale(layer_effects: Sequence[np.ndarray]) -> np.ndarray:
     return np.where(np.isfinite(sigma) & (sigma > 1e-12), sigma, 1.0)
 
 def influence_breadth(layer_effects: np.ndarray) -> float:
-    """Fraction of positive (layer, token) entries (Eq. 15a)."""
+    """Fraction of positive (layer, token) entries (Eq. 13)."""
     e = np.asarray(layer_effects, dtype=np.float64)
     if e.size == 0:
         return float("nan")
     return float((e > 0).mean())
 
 def influence_depth(layer_effects: np.ndarray) -> float:
-    """Positive-effect-weighted average layer index (Eq. 15b)."""
+    """Positive-effect-weighted average layer index (Eq. 14)."""
     e = np.asarray(layer_effects, dtype=np.float64)
     if e.size == 0 or e.ndim != 2:
         return float("nan")
@@ -99,7 +99,7 @@ def influence_depth(layer_effects: np.ndarray) -> float:
     return float(ratio.mean())
 
 def influence_intensity(layer_effects: np.ndarray, sigma: np.ndarray) -> float:
-    """RMS of layer-standardized token effects (Eq. 15c)."""
+    """RMS of layer-standardized token effects (Eq. 15)."""
     e = np.asarray(layer_effects, dtype=np.float64)
     if e.size == 0 or e.ndim != 2:
         return float("nan")
@@ -112,7 +112,7 @@ def influence_intensity(layer_effects: np.ndarray, sigma: np.ndarray) -> float:
 
 def profile_statistics(layer_effects: Sequence[np.ndarray]
                        ) -> List[ProfileStatistics]:
-    """Compute the three statistics for a batch of responses (Eq. 15a-c)."""
+    """Compute the three statistics for a batch of responses (Eqs. 13-15)."""
     grid = list(layer_effects)
     if not grid:
         return []
@@ -179,7 +179,7 @@ def compute_layer_effects(
     layers: Dict[int, LayerStates],
     token_ids: torch.Tensor,
 ) -> Tuple[torch.Tensor, torch.Tensor]:
-    """Compute S_t^l for every response token and layer (Eq. 10)."""
+    """Compute S_t^l for every response token and layer (Eq. 9)."""
     L = adapter.num_layers
     R = token_ids.numel()
     token_ids_dev = token_ids.to(adapter.device)
@@ -228,7 +228,7 @@ def graded_intervention(
     token_ids: torch.Tensor,
     gamma_grid: Sequence[float],
 ) -> np.ndarray:
-    """Apply the graded local intervention for a given gamma (Eq. 13)."""
+    """Apply the graded local intervention for a given gamma (Eq. 11)."""
     L = adapter.num_layers
     R = token_ids.numel()
     token_ids_dev = token_ids.to(adapter.device)
@@ -263,7 +263,7 @@ def graded_intervention(
 def graded_intervention_effect(
     s_gamma: np.ndarray,
 ) -> np.ndarray:
-    """Mean absolute token-level effect at a given gamma (Eq. 14)."""
+    """Mean absolute token-level effect at a given gamma (Eq. 12)."""
     return np.abs(s_gamma).mean(axis=0)
 
 def attention_only_effect(
@@ -304,6 +304,6 @@ def no_control_effect(
 
 def variant_statistics(layer_effects: Sequence[torch.Tensor]
                        ) -> List[ProfileStatistics]:
-    """Compute the three statistics for a batch of ablation results (Eq. 15a-c)."""
+    """Compute the three statistics for a batch of ablation results (Eqs. 13-15)."""
     return profile_statistics([np.asarray(e, dtype=np.float64)
                                for e in layer_effects])

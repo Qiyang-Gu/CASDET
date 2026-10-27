@@ -23,8 +23,14 @@ from .casdet import (
     variant_statistics,
 )
 from .experiments import run_experiment
+from .reference import (
+    ReferenceCalibration,
+    fit_reference,
+    score_batch_with_reference,
+    score_with_reference,
+)
 
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 
 __all__ = [
     "RagSample", "load_dataset", "tokenize_and_align",
@@ -33,6 +39,8 @@ __all__ = [
     "run_casdet", "profile_statistics", "variant_statistics",
     "influence_breadth", "influence_depth", "influence_intensity",
     "relative_position", "fuse_statistics", "fuse_profile_statistics",
+    "ReferenceCalibration", "fit_reference",
+    "score_with_reference", "score_batch_with_reference",
     "layer_relative_change", "token_relative_effect",
     "auroc", "auprc", "pcc", "compute_metrics", "page_l_test",
     "run_experiment",

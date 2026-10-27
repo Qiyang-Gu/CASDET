@@ -222,11 +222,6 @@ class ModelAdapter:
         b = self.model.lm_head.bias
         return F.linear(norm(x.to(W_U.device)), W_U, b)
 
-    @property
-    def embed_weight(self) -> torch.Tensor:
-        """Return the input embedding matrix."""
-        return self._llm.embed_tokens.weight
-
 def _context_contribution(
     attn_weights: torch.Tensor,
     hidden_states: torch.Tensor,

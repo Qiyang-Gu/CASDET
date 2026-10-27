@@ -1,5 +1,5 @@
 # =====================================================================
-# Graded local intervention (paper Section 3.3 / 4.2; Table 2, Figure 2)
+# Graded local intervention (paper Section 3.4 / 4.2; Table 1, Figure 2)
 #
 # For each response, the external-context contribution entering the FFN of
 # layer l is scaled by gamma:
@@ -39,7 +39,8 @@ datasets:
   - name: ragtruth
     quality: good
     # Keep null so that selection_eval_splits sees the official train/val/test
-    # fields and forms exactly the same evaluation split as Table 1.
+    # fields and forms exactly the same evaluation split as the main
+    # experiment (Table 2).
     split: null
     files:
       llama2_7b:  dataset/ragtruth/llama2_7b/response.jsonl

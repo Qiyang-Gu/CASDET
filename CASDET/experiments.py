@@ -329,8 +329,23 @@ def compute_casdet_results(
             len(bad_ids), len(samples), n_bad_elems, bad_ids[0])
     return results
 
+def _save_layer_effects(path: Path, results: Sequence[CasdetResult]) -> None:
+    """Cache ragged per-layer effects as a NaN-padded array for the reference check."""
+    if not results:
+        return
+    n_layers = results[0].layer_effects.shape[0]
+    n_tokens = max(r.layer_effects.shape[1] for r in results)
+    effects = np.full((len(results), n_layers, n_tokens), np.nan, dtype=np.float32)
+    for i, r in enumerate(results):
+        t = r.layer_effects.shape[1]
+        effects[i, :, :t] = r.layer_effects
+    labels = np.asarray([float(r.label) for r in results], dtype=np.float64)
+    save_npz(path, layer_effects=effects, labels=labels)
+    logger.info("[cache] wrote %s (%d x %d x %d)", path,
+                len(results), n_layers, n_tokens)
+
 def run_main_experiment(cfg: Dict[str, Any]) -> Dict[str, Any]:
-    """Main experiments (Table 1)."""
+    """Main experiments (Table 2)."""
     set_seed(cfg.get("seed", 42))
     out_dir = ensure_dir(cfg.get("output_dir", "log/results/main"))
     max_len = cfg.get("max_len", 4096)
@@ -381,6 +396,10 @@ def run_main_experiment(cfg: Dict[str, Any]) -> Dict[str, Any]:
                     continue
                 with Timer(logger, f"[{tag}] CASDET ({len(eval_set)} responses)"):
                     results = compute_casdet_results(adapter, eval_set)
+                if cfg.get("save_layer_effects", False):
+                    _save_layer_effects(
+                        out_dir / f"{ds_cfg['name']}_{model_key}_layers.npz",
+                        results)
                 labels, breadth, depth, intensity = _labels_and_statistics(results)
                 scores = fuse_profile_statistics(breadth, depth, intensity)
                 metrics = compute_metrics(labels, scores)
@@ -424,7 +443,7 @@ def run_main_experiment(cfg: Dict[str, Any]) -> Dict[str, Any]:
     return summary
 
 def run_intervention_experiment(cfg: Dict[str, Any]) -> Dict[str, Any]:
-    """Graded local intervention and Page's L test (Table 2)."""
+    """Graded local intervention and Page's L test (Table 1)."""
     set_seed(cfg.get("seed", 42))
     out_dir = ensure_dir(cfg.get("output_dir", "log/results/intervention"))
     _require_single_dataset(cfg, "intervention", "intervention_<model>.json/.npz")

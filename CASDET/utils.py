@@ -355,9 +355,9 @@ _STAT_GC = ((_STAT_XLIM[0] + _STAT_SEP[0]) / 2,
             (_STAT_SEP[0] + _STAT_SEP[1]) / 2,
             (_STAT_SEP[1] + _STAT_XLIM[1]) / 2)
 _STAT_GROUP = ("single statistic", "pairwise", "full")
-_STAT_AXIS = {"auroc": ([0.50, 0.60, 0.70, 0.80], (0.47, 0.83)),
-              "auprc": ([0.55, 0.65, 0.75, 0.85], (0.51, 0.86)),
-              "pcc": ([0.0, 0.2, 0.4, 0.6], (-0.05, 0.60))}
+_STAT_AXIS = {"auroc": ([0.5, 0.6, 0.7, 0.8], (0.47, 0.83)),
+              "auprc": ([0.4, 0.5, 0.6, 0.7, 0.8], (0.38, 0.84)),
+              "pcc": ([0.0, 0.1, 0.2, 0.3, 0.4, 0.5], (-0.045, 0.52))}
 
 def _stat_axis_from(vals: "np.ndarray"):
     lo = float(np.nanmin(vals))
@@ -370,8 +370,10 @@ def _stat_axis_from(vals: "np.ndarray"):
     ticks = [round(k * step, 6) for k in range(n0, n1 + 1)] or [0.0]
     return ticks, (lo, hi)
 
-_PUB_MODEL_F5 = {"llama2_7b": "#0956AF", "llama2_13b": "#2995A3",
-                 "llama3_8b": "#A63096", "mistral_7b": "#6E6E6E"}
+MODEL_COLORS = {"llama2_7b": "#0956AF", "llama2_13b": "#2995A3",
+                "llama3_8b": "#6E6E6E", "mistral_7b": "#111111"}
+
+MEAN_COLOR = "#A63096"
 
 def plot_statistic_combinations(
     per_model: Dict[str, Dict[str, Dict[str, float]]],
@@ -384,7 +386,7 @@ def plot_statistic_combinations(
     label_suffix: Optional[Dict[str, str]] = None,
     fig_h: Optional[float] = None,
     colors: Optional[Dict[str, str]] = None,
-    mean_color: str = "#111",
+    mean_color: str = MEAN_COLOR,
     fig_w: Optional[float] = None,
 ) -> None:
     """Plot the statistic-combination ablation (Figure 4)."""
@@ -392,19 +394,19 @@ def plot_statistic_combinations(
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
     from matplotlib.lines import Line2D
+    from matplotlib.transforms import Bbox
     plt.rcParams.update({
         "font.family": "sans-serif",
         "font.sans-serif": ["Arial", "Helvetica", "DejaVu Sans"],
         "mathtext.fontset": "stix",
         "pdf.fonttype": 42,
-        "svg.fonttype": "path",
         "font.size": 5.25,
         "lines.scale_dashes": False,
     })
 
     models = sorted(per_model, key=model_sort_key)
-    palette = tuple(_PUB_MODEL_F5.values())
-    colors = colors or _PUB_MODEL_F5
+    palette = tuple(MODEL_COLORS.values())
+    colors = colors or MODEL_COLORS
     present = set(next(iter(per_model.values())))
     if combos_order is not None:
         combos = [c for c in combos_order if c in present]
@@ -521,10 +523,34 @@ def plot_statistic_combinations(
                           label=mean_label))
     fig.legend(handles=handles, loc="lower center", ncol=len(handles) + 1,
                frameon=False, fontsize=6.2,
-               bbox_to_anchor=(0.5, 1 - 0.163 / h_in),
+               bbox_to_anchor=(0.5035, 1 - (0.163 + 5.0 / 72.0) / h_in),
                handletextpad=0.5, columnspacing=1.7)
     Path(out_path).parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(out_path, dpi=600)
+    fig.canvas.draw()
+    measure_dpi = 1200
+    old_dpi = fig.dpi
+    fig.set_dpi(measure_dpi)
+    fig.canvas.draw()
+    rgba = np.asarray(fig.canvas.buffer_rgba())
+    if rgba.ndim == 3 and rgba.shape[2] >= 3:
+        ink = (rgba[..., :3] < 245).any(axis=2)
+    else:
+        ink = rgba < 245
+    rows = np.where(ink.any(axis=1))[0]
+    cols = np.where(ink.any(axis=0))[0]
+    if rows.size == 0 or cols.size == 0:
+        raise RuntimeError("no ink found while cropping Figure 4")
+    top_margin_in = (2.8 + 0.04) / 72.0
+    bottom_margin_in = (2.8 - 0.44) / 72.0
+    right_margin_in = (rgba.shape[1] - 1 - cols[-1]) / float(measure_dpi)
+    left_margin_in = right_margin_in
+    x0 = cols[0] / float(measure_dpi) - left_margin_in
+    x1 = cols[-1] / float(measure_dpi) + right_margin_in
+    y0 = (rgba.shape[0] - 1 - rows[-1]) / float(measure_dpi) - bottom_margin_in
+    y1 = fig.get_figheight() - rows[0] / float(measure_dpi) + top_margin_in
+    bbox = Bbox.from_extents(x0, y0, x1, y1)
+    fig.set_dpi(old_dpi)
+    fig.savefig(out_path, dpi=600, bbox_inches=bbox, pad_inches=0)
     plt.close(fig)
 
 _DATASET_DISPLAY = {"ragtruth": "RAGTruth", "hallurag": "HalluRAG"}

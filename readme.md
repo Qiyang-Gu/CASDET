@@ -4,7 +4,9 @@
 
 **CASDET: Detecting RAG Hallucinations Considering Attention--FFN Cascade Influence**
 
-Qiyang Gu, Pengyu Guo, Fei Zhang
+Qiyang Gu, Min Tang, Fei Wang, Hui Chen, Fei Zhang, Pengyu Guo
+
+Corresponding authors: Fei Zhang and Pengyu Guo.
 
 This repository contains the official implementation and experiment code for
 CASDET.
@@ -22,11 +24,14 @@ intensity**, which are combined into a response-level hallucination risk score.
 The method requires no thresholds and no selection of specific attention heads
 or Transformer layers.
 
-![CASDET overview](figs/fig1_overview.png)
+![CASDET overview](figs/fig1_overview.svg)
+
+[Original vector PDF](figs/fig1_overview.pdf)
 
 The paper reports main results on RAGTruth and HalluRAG with Llama2-7B,
 Llama2-13B, Llama3-8B, and Mistral-7B, a graded local-intervention validation
-(Page's L test), and ablation studies.
+(Page's L test), ablation studies, and a fixed-reference single-response
+scoring check.
 
 ## Repository structure
 
@@ -39,16 +44,18 @@ Llama2-13B, Llama3-8B, and Mistral-7B, a graded local-intervention validation
 │   ├── datasets.py          # RAGTruth / HalluRAG loading and alignment
 │   ├── metrics.py           # AUROC, AUPRC, PCC, Page's L test
 │   ├── experiments.py       # Main, intervention and ablation pipelines
+│   ├── reference.py         # Fixed-reference single-response scoring
 │   ├── figures_weight.py    # Figure 5 (weight simplex)
 │   └── utils.py             # Configuration, logging, saving, plotting
 ├── scripts/
 │   ├── prepare_ragtruth.py  # Raw RAGTruth corpus -> per-model JSONL
 │   ├── prepare_hallurag.py  # HalluRAG pickles -> per-model JSON
+│   ├── reference_scoring.py # Table 3 cross-fitted comparison
 │   ├── make_figures.py      # Regenerate Figures 2-5
 │   └── check_env.py         # Check GPU, dependencies and input paths
 ├── log/
 │   ├── configs/             # Experiment configurations
-│   └── results/             # Reference result JSON and intervention NPZ
+│   └── results/             # Reference JSON (main, reference) and intervention NPZ
 ├── dataset/                 # Data root (not included; see dataset/readme.md)
 ├── models/                  # Local model weights (not included)
 ├── figs/                    # Figures used in the paper
@@ -115,16 +122,20 @@ python scripts/prepare_hallurag.py \
 ## Running
 
 ```bash
-# Main experiments (Table 1)
+# Main experiments (Table 2); also caches *_layers.npz for the Table 3 check
 python main.py --task main
 
-# Graded local intervention and Page's L test (Table 2, Figure 2)
+# Graded local intervention and Page's L test (Table 1, Figure 2)
 python main.py --task intervention
 
 # Ablation studies (Figure 3)
 python main.py --task ablation
 
-# Run all three tasks in order
+# Fixed-reference single-response scoring check (Table 3)
+python scripts/reference_scoring.py --data-dir log/results/main \
+    --out log/results/reference/summary.json
+
+# Run all three GPU tasks in order
 python main.py --task all
 
 # Quick server smoke test (one model, 100 samples)
@@ -157,10 +168,12 @@ python main.py --task main --config my.yaml    # custom configuration
 ```
 
 Results are written to `log/results/<task>/`. Reference results from the paper
-are included there as JSON (and the intervention effects as NPZ), so the
-numbers and Figures 2-5 can be reproduced without a GPU. The manuscript
-figures are provided in `figs/`; `scripts/make_figures.py` writes freshly
-generated vector PDFs to `figs_generated/`. Running an experiment overwrites
+are included there as JSON (including `log/results/reference/summary.json` for
+Table 3, and the intervention effects as NPZ), so the numbers and Figures 2-5
+can be reproduced without a GPU. The manuscript figures are provided in
+`figs/` as vector PDFs; the overview is also provided as an SVG for inline
+display. `scripts/make_figures.py` writes freshly generated vector PDFs to
+`figs_generated/`. Running an experiment overwrites
 the corresponding result files; copy the directory first if you want to keep
 the reference copy.
 
@@ -169,9 +182,24 @@ the reference copy.
 The response-level score is **defined on an evaluation batch**. Two ingredients
 depend on the batch: the layer scale `sigma_l` (standard deviation of the
 per-layer effects within the evaluated set) and the relative positions used to
-combine breadth, depth, and intensity (Eq. 16). Consequently, the repository
-provides a batch-scoring/experiment interface rather than a single-response
-`predict()` function that would hide this dependence.
+combine breadth, depth, and intensity (Eq. 16). `profile_statistics` and
+`fuse_statistics` therefore operate on a set.
+
+For isolated scoring, `CASDET.reference.fit_reference` fits `sigma_l` and the
+three reference distributions on an unlabeled reference set, and
+`score_with_reference` scores one response with that fixed calibration:
+
+```python
+from CASDET.reference import fit_reference, score_with_reference
+
+reference = fit_reference(reference_layer_effects)   # list of [L, T_i] arrays
+score = score_with_reference(response_layer_effects, reference)  # [L, T]
+```
+
+The reference set supplies only label-free normalization; no hallucination
+labels are used. `scripts/reference_scoring.py --data-dir <dir>` reproduces the
+cross-fitted comparison in Section 4.3 (Table 3) from the `*_layers.npz` files
+cached by the main experiment (`save_layer_effects: true` in `main.yaml`).
 
 ## Citation
 
@@ -179,11 +207,14 @@ provides a batch-scoring/experiment interface rather than a single-response
 @article{gu2026casdet,
   title   = {CASDET: Detecting RAG Hallucinations Considering
              Attention--FFN Cascade Influence},
-  author  = {Gu, Qiyang and Guo, Pengyu and Zhang, Fei},
+  author  = {Gu, Qiyang and Tang, Min and Wang, Fei and Chen, Hui and
+             Zhang, Fei and Guo, Pengyu},
   journal = {Discover Computing},
   year    = {2026}
 }
 ```
+
+Archived software: [10.5281/zenodo.23468986](https://doi.org/10.5281/zenodo.23468986) (v1.1.0).
 
 ## License
 
@@ -193,4 +224,7 @@ license does not cover the datasets or the model weights; see
 
 ## Contact
 
-Qiyang Gu, `guqyams@163.com`
+Qiyang Gu, `guqyams@outlook.com`
+
+Corresponding authors: Fei Zhang (`feizhang100@sina.com`), Pengyu Guo
+(`pengyu.guo@alumni.nudt.edu.cn`).
