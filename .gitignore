@@ -1,10 +1,17 @@
+# Python
 __pycache__/
 *.py[cod]
 .pytest_cache/
 .venv/
+
+# Model weights
 models/
+
+# Dataset files (keep only the instructions)
 dataset/*
 !dataset/readme.md
+
+# Runtime artifacts
 log/run.log
 log/results/**/*.npz
 !log/results/intervention/*.npz
