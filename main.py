@@ -28,8 +28,8 @@ ALL_TASKS = ["main", "intervention", "ablation"]
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="CASDET: Detecting RAG Hallucinations Considering "
-                    "Attention--FFN Cascade Influence")
+        description="Detecting RAG hallucinations via cascade influence from "
+                    "attention to feedforward networks")
     parser.add_argument(
         "--task", "-t", required=True,
         choices=list(DEFAULT_CONFIGS) + ["all"],

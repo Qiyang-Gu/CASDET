@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-"""CASDET: Detecting RAG Hallucinations Considering Attention--FFN Cascade Influence.
+"""Detecting RAG hallucinations via cascade influence from attention to feedforward networks.
 
 Core package: model access, influence-signal computation, datasets, metrics,
 experiment pipelines, and utilities."""
@@ -30,7 +30,7 @@ from .reference import (
     score_with_reference,
 )
 
-__version__ = "1.1.0"
+__version__ = "1.1.1"
 
 __all__ = [
     "RagSample", "load_dataset", "tokenize_and_align",

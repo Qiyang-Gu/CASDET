@@ -2,7 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23468986.svg)](https://doi.org/10.5281/zenodo.23468986)
 
-**CASDET: Detecting RAG Hallucinations Considering Attention--FFN Cascade Influence**
+**Detecting RAG hallucinations via cascade influence from attention to feedforward networks**
 
 Qiyang Gu, Min Tang, Fei Wang, Hui Chen, Fei Zhang, Pengyu Guo
 
@@ -205,8 +205,8 @@ cached by the main experiment (`save_layer_effects: true` in `main.yaml`).
 
 ```bibtex
 @article{gu2026casdet,
-  title   = {CASDET: Detecting RAG Hallucinations Considering
-             Attention--FFN Cascade Influence},
+  title   = {Detecting RAG hallucinations via cascade influence
+             from attention to feedforward networks},
   author  = {Gu, Qiyang and Tang, Min and Wang, Fei and Chen, Hui and
              Zhang, Fei and Guo, Pengyu},
   journal = {Discover Computing},
@@ -214,7 +214,7 @@ cached by the main experiment (`save_layer_effects: true` in `main.yaml`).
 }
 ```
 
-Archived software: [10.5281/zenodo.23468986](https://doi.org/10.5281/zenodo.23468986) (v1.1.0).
+Archived software: [10.5281/zenodo.23468986](https://doi.org/10.5281/zenodo.23468986) (v1.1.1).
 
 ## License
 
